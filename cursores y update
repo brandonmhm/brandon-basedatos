@@ -1,0 +1,60 @@
+  MY_ID INTEGER;
+BEGIN  ---desde aqui hacemos un bloque pl/sql y devemos de terminarlo con / si no va a marca en error
+  GUARDAR_USUARIO1(MY_ID,'CHANA','CHANA@GMAIL.COM',6000);
+  GUARDAR_USUARIO1(MY_ID,'PANCRACIO','PAN@GMAIL.COM',5000);
+  GUARDAR_USUARIO1(MY_ID,'PETRONILA','PETRO@GMAIL.COM',8000);
+END;
+/
+
+select * from usuario1;
+
+set serveroutput on; --Es para ponerlo enb modo de depuracion y para ver las salidas de output
+
+DECLARE
+algo VARCHAR2(120);
+BEGIN
+DBMS_OUTPUT.PUT_LINE('Probaremos un cursor implicito');
+
+--cursor implicito
+SELECT nombre INTO algo FROM USUARIO1 WHERE ID_USUARIO1=1;
+DBMS_OUTPUT.PUT_LINE('En la memoria global esta'||algo);  ------  ||los paint son para concatenar
+END;
+/
+
+--el mismo ejercicio con un cursor explicito para obtener muchas filas de memoria
+declare
+  cursor CUR_USUARIO1 is select * from USUARIO1;
+begin
+  for REC_USUARIO IN CUR_USUARIO1 loop
+  DBMS_OUTPUT.PUT_LINE('En este momento esta en memoria:'||REC_USUARIO.nombre);
+  end loop;
+  end;
+  /
+  
+  
+  
+  
+  --empezamos el cursor explicito con update
+  
+  declare 
+  SUELDO_HORA integer:=200;--DECLARAMOS VARIABLE
+  cursor CUR_PAGAR_NOMINA is select * from USUARIO1 for update; --NOMBRE DEL CURSOR
+  begin
+  
+      --REGISTRO
+  for REC_USUARIO1 in CUR_PAGAR_NOMINA loop
+      --PL/SQL 
+    if REC_USUARIO1.SUELDO_BASE >= 6000 then
+      --SQL   
+    update USUARIO1 set SUELDO_BASE=REC_USUARIO1.SUELDO_BASE+48*300 where current of CUR_PAGAR_NOMINA;
+    
+    else
+     update USUARIO1 set SUELDO_BASE=REC_USUARIO1.SUELDO_BASE+48*200 where current of CUR_PAGAR_NOMINA;
+  
+    end if;
+  end loop;
+    DBMS_OUTPUT.PUT_LINE('Pago de nomina exitoso!!');
+  end;
+  /
+  
+  select * from USUARIO1;
